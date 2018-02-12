@@ -211,7 +211,7 @@ extension TableViewDataSource: UITableViewDelegate {
         switch editingStyle {
         case .delete:
             if case .swipeToDelete(let cellHandler) = cell.editActions {
-                sections[indexPath.row].items.remove(at: indexPath.row)
+                sections[indexPath.section].items.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .automatic)
                 cellHandler?(tableView, indexPath)
             }
