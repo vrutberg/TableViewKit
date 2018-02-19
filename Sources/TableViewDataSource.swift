@@ -195,7 +195,6 @@ extension TableViewDataSource: UITableViewDataSource {
             }
         }
     }
-
 }
 
 extension TableViewDataSource: UITableViewDelegate {
@@ -212,7 +211,9 @@ extension TableViewDataSource: UITableViewDelegate {
         case .delete:
             if case .swipeToDelete(let cellHandler) = cell.editActions {
                 sections[indexPath.section].items.remove(at: indexPath.row)
+                tableView.beginUpdates()
                 tableView.deleteRows(at: [indexPath], with: .automatic)
+                tableView.endUpdates()
                 cellHandler?(tableView, indexPath)
             }
 
