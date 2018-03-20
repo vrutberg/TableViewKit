@@ -9,15 +9,21 @@
 import UIKit
 import TableViewKit
 
-struct Person {
+class Person {
     var name: String
+    init(name: String) {
+        self.name = name
+    }
 }
 
-struct Quote {
+class Quote {
     let id = UUID().uuidString
-    
     var text: String
     var author: Person
+    init(text: String, author: Person){
+        self.text = text
+        self.author = author
+    }
 }
 
 class DemoTableViewController: UITableViewController {
@@ -36,6 +42,7 @@ class DemoTableViewController: UITableViewController {
         super.viewDidLoad()
         tableView.allowsMultipleSelection = true
         dataSource.setup(with: tableView)
+        navigationItem.rightBarButtonItem = self.editButtonItem
         updateSections(animated: false)
     }
     
@@ -75,12 +82,32 @@ class DemoTableViewController: UITableViewController {
             deselectionHandler: { [weak self] _, _, _ in
                 self?.updateSections(animated: true)
             },
+            editActions: createDeleteAction(),
             copyAction: { _, _, _ in
                 UIPasteboard.general.string = quote.shareableString
             }
         )
     }
-    
+
+    private func createMoveAction() -> TableViewCellModel.CellEditActions {
+        return .move(handler: { [weak self] _, fromIndexPath, toIndexPath in
+            guard let strongSelf = self else { return }
+            let itemToMove = strongSelf.quotes[fromIndexPath.row]
+            strongSelf.quotes.remove(at: fromIndexPath.row)
+            strongSelf.quotes.insert(itemToMove, at: toIndexPath.row)
+            strongSelf.updateSections(animated: false)
+        })
+    }
+
+    private func createDeleteAction() -> TableViewCellModel.CellEditActions {
+        return .swipeToDelete(handler: {[weak self] _, indexPath in
+            print("swipeToDelete")
+            guard let strongSelf = self else { return }
+            strongSelf.quotes.remove(at: indexPath.row)
+            strongSelf.updateSections(animated: true)
+
+        })
+    }
 }
 
 extension Quote {
@@ -88,7 +115,6 @@ extension Quote {
     var shareableString: String {
         return "\"\(text)\" – \(author.name)"
     }
-    
 }
 
 extension HandwrittenNoteCell.Model {
@@ -97,5 +123,4 @@ extension HandwrittenNoteCell.Model {
         self.title = quote.text
         self.subtitle = "– " + quote.author.name
     }
-    
 }

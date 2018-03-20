@@ -187,12 +187,29 @@ extension TableViewDataSource: UITableViewDataSource {
             case .editActions(let actions):
                 return actions.count > 0
 
-            case .swipeToDelete:
+            case .swipeToDelete, .move:
                 return true
 
             case .none:
                 return false
             }
+        }
+    }
+
+    /// :nodoc:
+    public func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        let cellModel = sections[indexPath]
+        if case .move = cellModel.editActions {
+            return true
+        }
+        return false
+    }
+
+    /// :nodoc:
+    public func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        let cellModel = sections[sourceIndexPath]
+        if case .move(let handler) = cellModel.editActions {
+            handler?(tableView, sourceIndexPath, destinationIndexPath)
         }
     }
 }
@@ -221,7 +238,49 @@ extension TableViewDataSource: UITableViewDelegate {
             break
         }
     }
-    
+
+    //TODO: this code is not clean nor clear, help me fix it
+    public func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+        if !tableView.isEditing {
+            return .delete // TODO: TableViewKits default behavior. Should we make it .none instead?
+        }
+
+        let cell = sections[indexPath]
+        switch cell.editActions {
+        case .editActions(let actions):
+            let styles = actions.map { $0.style }
+            let deletes = styles.filter { $0 == .destructive }
+            if deletes.count > 0 {
+                return .delete
+            }
+            let inserts = styles.filter { $0 == .normal }
+            if inserts.count > 0 {
+                return .insert
+            }
+            return .none
+        case .swipeToDelete:
+            return .delete
+        case .none, .move:
+            return .none
+        }
+    }
+
+    public func tableView(_ tableView: UITableView, shouldIndentWhileEditingRowAt indexPath: IndexPath) -> Bool {
+        let cell = sections[indexPath]
+        switch cell.editActions {
+
+        case .editActions(let actions):
+            return actions.count > 0
+
+        case .swipeToDelete, .move:
+            return false
+
+        case .none:
+            return false
+        }
+    }
+
+
     /// :nodoc:
     public func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         guard !ignoreDidEndDisplayingCells else { return }

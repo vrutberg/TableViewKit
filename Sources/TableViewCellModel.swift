@@ -15,11 +15,13 @@ public struct TableViewCellModel: Identifiable {
     public typealias CellConfigurator = (UITableView, UITableViewCell) -> Void
     public typealias Handler = (UITableView, IndexPath) -> Void
     public typealias CellHandler = (UITableView, UITableViewCell, IndexPath) -> Void
+    public typealias MoveHandler = (UITableView, IndexPath, IndexPath) -> Void
 
     public enum CellEditActions {
         case none
         case swipeToDelete(handler: Handler?)
         case editActions(actions: [UITableViewRowAction])
+        case move(handler: MoveHandler?)
     }
     
     internal static let StandardHeight: CGFloat = 44.0
@@ -45,7 +47,7 @@ public struct TableViewCellModel: Identifiable {
     /// Determines if the cell is selectable (and highlightable) or not during multiselection.
     /// If set to false, won't indent during multiselection either. Defaults to `true`.
     public var isMultiSelectable: Bool
-    
+
     /// A function which is called whenever the cell is selected.
     public var selectionHandler: Handler?
     
@@ -54,7 +56,7 @@ public struct TableViewCellModel: Identifiable {
     
     /// A function called when the cell is about to be displayed.
     public var willDisplayHandler: CellHandler?
-    
+
     /// A function called after this cell has ended displaying.
     /// This handler might not always get called when switching data sources.
     /// Do not put critical cleanup code here.
@@ -181,7 +183,7 @@ public struct TableViewCellModel: Identifiable {
                 typedHandler(tableView, indexPath, cell)
             }
         }
-        
+
         func cellHandlerForTypedHandler(_ typedHandler: @escaping (UITableView, IndexPath, Cell) -> Void) -> CellHandler {
             return { tableView, cell, indexPath in
                 guard let cell = cell as? Cell else { return } // Silently fails because of didEndDisplay being VERY unreliable
@@ -195,7 +197,7 @@ public struct TableViewCellModel: Identifiable {
         self.preferredAnimation = preferredAnimation
         self.isSelectable = isSelectable
         self.isMultiSelectable = isMultiSelectable
-        
+
         cellReuseIdentifier = Cell.staticReuseIdentifier
         self.cellReuseRegistrator = { Cell.register(viewKind: .cell, inTableView: $0) }
         
