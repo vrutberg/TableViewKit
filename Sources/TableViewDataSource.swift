@@ -97,8 +97,10 @@ public class TableViewDataSource: NSObject {
 
         }
 
-        processingOperation.completionBlock = { [weak self] in
-            self?.reloadData(newSections: newSections)
+        processingOperation.completionBlock = {
+            DispatchQueue.main.async { [weak self] in
+                self?.reloadData(newSections: newSections)
+            }
             completion()
         }
         processingQueue.cancelAllOperations() // If user spams UI, and toggles state back and forth, make sure to cancel old state changes and just process the most recent complete state
