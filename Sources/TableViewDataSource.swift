@@ -98,7 +98,8 @@ public class TableViewDataSource: NSObject {
         }
 
         processingOperation.completionBlock = {
-            DispatchQueue.main.async { [weak self] in
+            DispatchQueue.main.sync { [weak self] in
+                print("SYNC!!!!!!!!!!")
                 self?.reloadData(newSections: newSections)
             }
             completion()
